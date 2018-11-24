@@ -1,4 +1,7 @@
-def evaluar_resultado(dists, real_dists):
+import matplotlib.pyplot as plt
+
+
+def evaluar_resultado(dists, real_dists, verbose=False):
     correctas = 0
     incorrectas = 0
     for i in range(len(real_dists)):
@@ -10,5 +13,48 @@ def evaluar_resultado(dists, real_dists):
         else:
             assert False, "distancia erronea!"
 
-    print("efectividad={:.1f}%  correctas={} incorrectas={}".format(100 * correctas / (correctas + incorrectas),
-                                                                    correctas, incorrectas))
+    if verbose:
+        print("efectividad={:.1f}%  correctas={} incorrectas={}".format(100 * correctas / (correctas + incorrectas),
+                                                                        correctas, incorrectas))
+
+    return 100 * correctas / (correctas + incorrectas)
+
+
+def obtener_curva(indice, queryset, lscan_time, lscan_dists):
+    efectividad = [0]
+    eficiencia = [0]
+
+    checks = 1
+    while efectividad[-1] < 99.9:
+        # realizar busqueda
+        dists, time = indice.search(queryset, checks=checks)
+
+        # guardar efectividad y eficiencia
+        efectividad.append(evaluar_resultado(dists, lscan_dists))
+        eficiencia.append(time / lscan_time)
+
+        # aumentar número de check
+        checks *= 2
+
+    # asegurarse de obtener 100% de efectividad
+    if efectividad[-1] != 100:
+        dists, time = indice.search(queryset, checks=-1)
+        efectividad.append(evaluar_resultado(dists, lscan_dists))
+        eficiencia.append(time / lscan_time)
+
+    return efectividad, eficiencia
+
+
+def graficar_curva(efectividad, eficiencia):
+    plt.figure()
+    plt.xlabel('Efectividad')
+    plt.ylabel('Eficiencia')
+    plt.grid(True)
+
+    plt.plot(efectividad, eficiencia)
+    plt.xlim([0, 100])
+    plt.xlim([0, 1])
+
+    plt.legend(["KDTree con 2 árboles"])
+    plt.show()
+    return
