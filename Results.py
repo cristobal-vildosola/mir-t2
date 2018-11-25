@@ -45,16 +45,20 @@ def obtener_curva(indice, queryset, lscan_time, lscan_dists):
     return efectividad, eficiencia
 
 
-def graficar_curva(efectividad, eficiencia):
+def graficar_curvas(curvas, leyenda):
     plt.figure()
     plt.xlabel('Efectividad')
     plt.ylabel('Eficiencia')
     plt.grid(True)
+    max_efic = 1.0
 
-    plt.plot(efectividad, eficiencia)
+    for efectividad, eficiencia in curvas:
+        plt.plot(efectividad, eficiencia, 'o')
+        max_efic = max(max_efic, max(eficiencia))
+
     plt.xlim([0, 100])
-    plt.xlim([0, 1])
+    plt.ylim([0, 1])
 
-    plt.legend(["KDTree con 2 árboles"])
+    plt.legend(leyenda)
     plt.show()
     return
