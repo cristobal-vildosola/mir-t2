@@ -47,8 +47,7 @@ class KMeansTree:
         self.flann = pyflann.FLANN()
 
         t0 = time.time()
-        self.flann.build_index(dataset, algorithm='kmeans', branching=branching,
-                               iterations=-1, centers_init='gonzales', log_level='info')
+        self.flann.build_index(dataset, algorithm='kmeans', branching=branching, iterations=-1)
         t1 = time.time()
 
         self.build_time = t1 - t0

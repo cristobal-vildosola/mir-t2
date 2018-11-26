@@ -53,12 +53,14 @@ def graficar_curvas(curvas, leyenda):
     max_efic = 1.0
 
     for efectividad, eficiencia in curvas:
-        plt.plot(efectividad, eficiencia, 'o')
+        plt.plot(efectividad, eficiencia, 'o-')
         max_efic = max(max_efic, max(eficiencia))
 
     plt.xlim([0, 100])
-    plt.ylim([0, 1])
+    plt.ylim([0, max_efic])
 
     plt.legend(leyenda)
+
+    plt.ion()
     plt.show()
     return
