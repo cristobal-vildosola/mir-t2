@@ -60,7 +60,5 @@ def graficar_curvas(curvas, leyenda):
     plt.ylim([0, max_efic])
 
     plt.legend(leyenda)
-
-    plt.ion()
     plt.show()
     return
