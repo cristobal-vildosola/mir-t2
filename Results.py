@@ -20,11 +20,17 @@ def evaluar_resultado(dists, real_dists, verbose=False):
     return 100 * correctas / (correctas + incorrectas)
 
 
-def obtener_curva(indice, queryset, lscan_time, lscan_dists):
-    efectividad = [0]
-    eficiencia = [0]
+def obtener_curva(indice, queryset, lscan_time, lscan_dists, verbose=False):
+    dists, time = indice.search(queryset, checks=1)
+    
+    efectividad = [evaluar_resultado(dists, lscan_dists)]
+    eficiencia = [time / lscan_time]
 
-    checks = 1
+    if verbose:
+        print("Punto1 = {:.1f}%, {:.1f}% ({:.1f}s)".format(efectividad[-1], eficiencia[-1], time))
+
+    checks = 2
+    i = 2
     while efectividad[-1] < 99.9:
         # realizar busqueda
         dists, time = indice.search(queryset, checks=checks)
@@ -33,20 +39,18 @@ def obtener_curva(indice, queryset, lscan_time, lscan_dists):
         efectividad.append(evaluar_resultado(dists, lscan_dists))
         eficiencia.append(time / lscan_time)
 
-        # aumentar número de check
-        checks *= 2
+        if verbose:
+            print("Punto{:d} = {:.1f}%, {:.1f}T ({:.1f}s)".format(i, efectividad[-1], eficiencia[-1], time))
 
-    # asegurarse de obtener 100% de efectividad
-    if efectividad[-1] != 100:
-        dists, time = indice.search(queryset, checks=-1)
-        efectividad.append(evaluar_resultado(dists, lscan_dists))
-        eficiencia.append(time / lscan_time)
+        # aumentar número de checks
+        checks *= 2
+        i += 1
 
     return efectividad, eficiencia
 
 
 def graficar_curvas(curvas, leyenda, titulo):
-    plt.figure(figsize=(20, 6))
+    plt.figure(figsize=(20, 7))
 
     # curvas
     plt.subplot(1, 2, 1)
@@ -102,8 +106,22 @@ def graficar_curvas(curvas, leyenda, titulo):
     # agrandar tamaño letra
     table.auto_set_font_size(False)
     table.set_fontsize(14)
-    table.scale(1.2, 1.4)
+    table.scale(1.4, 1.4)
 
-    print("hacer doble click sobre la imagen para ver en definición completa")
+    print("Hacer doble click sobre la imagen para ver en definición completa")
+    plt.show()
+    return
+
+
+def graficar_histograma(x, titulo, bins=10):
+    plt.figure()
+
+    plt.hist(x, bins)
+
+    plt.xlabel('Distancia')
+    plt.ylabel('Ocurrencias')
+
+    plt.title(titulo)
+
     plt.show()
     return
