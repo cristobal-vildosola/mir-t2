@@ -33,7 +33,7 @@ def dimension_intrinseca(dataset, titulo, porc_muestras):
 
     mean = numpy.mean(distancias)
     std = numpy.std(distancias)
-    graficar_histograma(distancias, titulo, bins=20)
+    graficar_histograma(distancias, titulo)
 
     return mean ** 2 / (2 * std ** 2)
 

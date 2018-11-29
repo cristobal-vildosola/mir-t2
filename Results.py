@@ -20,9 +20,11 @@ def evaluar_resultado(dists, real_dists, verbose=False):
     return 100 * correctas / (correctas + incorrectas)
 
 
+# obtiene la curva de un índice en un queryset, para ello se realizan pruebas con distintos
+# números de checks hasta alcanzar un 99.9% de efectividad
 def obtener_curva(indice, queryset, lscan_time, lscan_dists, verbose=False):
-    dists, time = indice.search(queryset, checks=1)
-    
+    _, dists, time = indice.search(queryset, checks=1)
+
     efectividad = [evaluar_resultado(dists, lscan_dists)]
     eficiencia = [time / lscan_time]
 
@@ -33,10 +35,56 @@ def obtener_curva(indice, queryset, lscan_time, lscan_dists, verbose=False):
     i = 2
     while efectividad[-1] < 99.9:
         # realizar busqueda
-        dists, time = indice.search(queryset, checks=checks)
+        _, dists, time = indice.search(queryset, checks=checks)
 
         # guardar efectividad y eficiencia
         efectividad.append(evaluar_resultado(dists, lscan_dists))
+        eficiencia.append(time / lscan_time)
+
+        if verbose:
+            print("Punto{:d} = {:.1f}%, {:.1f}T ({:.1f}s)".format(i, efectividad[-1], eficiencia[-1], time))
+
+        # aumentar número de checks
+        checks *= 2
+        i += 1
+
+    return efectividad, eficiencia
+
+
+def evaluar_resultado_nn(results, real_nns, verbose=False):
+    correctas = 0
+    incorrectas = 0
+    for i in range(len(results)):
+        # comparar las distancias
+        if results[i] in real_nns[i]:
+            correctas += 1
+        else:
+            incorrectas += 1
+
+    if verbose:
+        print("efectividad={:.1f}%  correctas={} incorrectas={}".format(100 * correctas / (correctas + incorrectas),
+                                                                        correctas, incorrectas))
+
+    return 100 * correctas / (correctas + incorrectas)
+
+
+def obtener_curva_nn(indice, queryset, lscan_time, nn_results, verbose=False):
+    results, _, time = indice.search(queryset, checks=1)
+
+    efectividad = [evaluar_resultado_nn(results, nn_results)]
+    eficiencia = [time / lscan_time]
+
+    if verbose:
+        print("Punto1 = {:.1f}%, {:.1f}% ({:.1f}s)".format(efectividad[-1], eficiencia[-1], time))
+
+    checks = 2
+    i = 2
+    while efectividad[-1] < 99.9:
+        # realizar busqueda
+        results, _, time = indice.search(queryset, checks=checks)
+
+        # guardar efectividad y eficiencia
+        efectividad.append(evaluar_resultado_nn(results, nn_results))
         eficiencia.append(time / lscan_time)
 
         if verbose:
@@ -58,7 +106,7 @@ def graficar_curvas(curvas, leyenda, titulo):
     # graficar curvas y obtener límite en y
     max_efic = 1.0
     for efectividad, eficiencia in curvas:
-        p = plt.plot(efectividad, eficiencia, 'o-')
+        plt.plot(efectividad, eficiencia, 'o-')
         max_efic = max(max_efic, max(eficiencia))
 
     # configuración
@@ -112,7 +160,7 @@ def graficar_curvas(curvas, leyenda, titulo):
     return
 
 
-def graficar_histograma(x, titulo, bins=10):
+def graficar_histograma(x, titulo, bins=50):
     plt.figure()
 
     plt.hist(x, bins)
