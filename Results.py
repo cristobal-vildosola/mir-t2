@@ -108,7 +108,6 @@ def graficar_curvas(curvas, leyenda, titulo):
     table.set_fontsize(14)
     table.scale(1.4, 1.4)
 
-    print("Hacer doble click sobre la imagen para ver en definición completa")
     plt.show()
     return
 
